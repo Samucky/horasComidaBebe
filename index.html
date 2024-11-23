@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Horas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    /* Fondo con degradado */
+    body {
+      background: linear-gradient(135deg, #fbc2eb, #a18cd1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-sm mx-auto p-6 bg-white bg-opacity-90 rounded-lg shadow-lg">
+    <h1 class="text-3xl font-extrabold text-center mb-6 text-pink-500">✨ Calculadora de Regreso ✨</h1>
+    
+    <form id="timeForm" class="space-y-4">
+      <div>
+        <label for="horaSalida" class="block text-sm font-medium text-purple-700">Hora de salida:</label>
+        <input 
+          type="time" 
+          id="horaSalida" 
+          class="w-full mt-1 px-3 py-2 bg-purple-100 text-purple-900 rounded-md border border-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
+          required
+        />
+      </div>
+      
+      <div>
+        <label for="horasComida" class="block text-sm font-medium text-purple-700">Horas de comida (ejemplo: 1.5 para 1:30):</label>
+        <input 
+          type="number" 
+          id="horasComida" 
+          class="w-full mt-1 px-3 py-2 bg-purple-100 text-purple-900 rounded-md border border-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
+          min="0"
+          step="0.25"
+          required
+        />
+      </div>
+      
+      <button 
+        type="submit" 
+        class="w-full bg-gradient-to-r from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-md shadow-md transform hover:scale-105 transition duration-300"
+      >
+        Calcular ✨
+      </button>
+    </form>
+    
+    <div id="resultado" class="mt-6 p-4 text-center bg-pink-100 text-purple-900 rounded-md shadow-md hidden">
+      <p class="text-lg font-semibold">Deberías regresar a las:</p>
+      <p id="horaRegreso" class="text-2xl font-bold"></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('timeForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const horaSalida = document.getElementById('horaSalida').value;
+      const horasComida = parseFloat(document.getElementById('horasComida').value);
+
+      if (!horaSalida || isNaN(horasComida)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Por favor, llena todos los campos correctamente.',
+          confirmButtonColor: '#f472b6'
+        });
+        return;
+      }
+
+      // Convertir hora de salida a Date
+      const [hours, minutes] = horaSalida.split(':').map(Number);
+      const salida = new Date();
+      salida.setHours(hours, minutes, 0);
+
+      // Calcular la hora de regreso
+      const regreso = new Date(salida);
+      const minutosAdicionales = horasComida * 60;
+      regreso.setMinutes(regreso.getMinutes() + minutosAdicionales);
+
+      // Calcular tiempo restante
+      const ahora = new Date();
+      const tiempoRestante = Math.max(0, regreso - ahora);
+      const minutosRestantes = Math.floor(tiempoRestante / (1000 * 60));
+
+      // Formatear hora de regreso
+      const opcionesTiempo = { hour: '2-digit', minute: '2-digit' };
+      const horaRegreso = regreso.toLocaleTimeString([], opcionesTiempo);
+
+      // Mostrar resultado en el div
+      const resultadoDiv = document.getElementById('resultado');
+      const horaRegresoP = document.getElementById('horaRegreso');
+      resultadoDiv.classList.remove('hidden');
+      horaRegresoP.textContent = horaRegreso;
+
+      // Mostrar SweetAlert dependiendo del tiempo restante
+      if (minutosRestantes <= 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: '¡Es hora de regresar!',
+          text: `Ya deberías estar de regreso.`,
+          confirmButtonColor: '#d946ef',
+          background: '#fff0f6',
+          color: '#9d174d'
+        });
+      } else if (minutosRestantes < 60) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Tiempo Restante',
+          text: `Te quedan ${minutosRestantes} minutos.`,
+          confirmButtonColor: '#d946ef',
+          background: '#fff0f6',
+          color: '#9d174d'
+        });
+      } else {
+        const horasRestantes = Math.floor(minutosRestantes / 60);
+        const minutosSobran = minutosRestantes % 60;
+        const textoTiempo = minutosSobran > 0 
+          ? `${horasRestantes} horas y ${minutosSobran} minutos`
+          : `${horasRestantes} horas`;
+
+        Swal.fire({
+          icon: 'info',
+          title: 'Tiempo Restante',
+          text: `Te quedan ${textoTiempo}.`,
+          confirmButtonColor: '#d946ef',
+          background: '#fff0f6',
+          color: '#9d174d'
+        });
+      }
+    });
+  </script>
+</body>
+</html>
