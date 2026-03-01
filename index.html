@@ -272,25 +272,49 @@
     }
     .reloj-hora-wrap {
       display: flex;
-      align-items: baseline;
-      gap: 0.25rem;
+      align-items: center;
+      gap: 0.4rem;
     }
     .reloj-num {
-      width: 3rem;
+      width: 3.6rem;
       text-align: center;
       font-family: 'Nunito', sans-serif;
-      font-size: clamp(1.8rem, 7vw, 2.4rem);
+      font-size: clamp(1.8rem, 6vw, 2.3rem);
       font-weight: 800;
       color: var(--pink-deep);
       border: none;
       background: transparent;
       padding: 0.1rem 0;
+      line-height: 1.05;
     }
     .reloj-num:focus {
       outline: none;
     }
     .reloj-num::placeholder {
       color: #f48fb1;
+    }
+    .reloj-ampm {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-left: 0.25rem;
+    }
+    .reloj-ampm-btn {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--pink-light);
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--pink-deep);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .reloj-ampm-btn.activo {
+      background: var(--pink-deep);
+      color: #fff;
+      border-color: var(--pink-deep);
+      box-shadow: 0 2px 6px rgba(233, 30, 99, 0.35);
     }
     .reloj-display:hover {
       background: rgba(255, 107, 157, 0.08);
@@ -308,19 +332,23 @@
       line-height: 1.1;
     }
     .reloj-sub {
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: #ad1457;
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      justify-content: center;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+      text-align: center;
     }
     .reloj-sub .punto {
-      width: 4px;
-      height: 4px;
+      width: 6px;
+      height: 6px;
       background: var(--pink-deep);
       border-radius: 50%;
       animation: pulse 2s ease-in-out infinite;
+      flex-shrink: 0;
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
@@ -418,12 +446,12 @@
               <input
                 type="number"
                 id="salidaHoras"
-                min="0"
-                max="23"
-                placeholder="HH"
+                min="1"
+                max="12"
+                placeholder="12"
                 inputmode="numeric"
                 class="reloj-num"
-                aria-label="Hora de salida - horas"
+                aria-label="Hora de salida - horas (formato 12 h)"
               />
               <span class="duracion-sep">:</span>
               <input
@@ -431,11 +459,16 @@
                 id="salidaMinutos"
                 min="0"
                 max="59"
-                placeholder="MM"
+                placeholder="00"
                 inputmode="numeric"
                 class="reloj-num"
                 aria-label="Hora de salida - minutos"
               />
+              <div class="reloj-ampm" role="radiogroup" aria-label="Selecciona AM o PM">
+                <button type="button" id="salidaAm" class="reloj-ampm-btn">AM</button>
+                <button type="button" id="salidaPm" class="reloj-ampm-btn activo">PM</button>
+                <input type="hidden" id="salidaPeriodo" value="PM" />
+              </div>
             </div>
             <span id="relojSub" class="reloj-sub">
               <span class="punto"></span>
@@ -494,6 +527,9 @@
       const salidaHoras = document.getElementById('salidaHoras');
       const salidaMinutos = document.getElementById('salidaMinutos');
       const relojSubText = document.getElementById('relojSubText');
+      const salidaPeriodoInput = document.getElementById('salidaPeriodo');
+      const btnAm = document.getElementById('salidaAm');
+      const btnPm = document.getElementById('salidaPm');
 
       function formatear12(h, m) {
         const horas24 = Math.min(23, Math.max(0, h));
@@ -509,10 +545,21 @@
         return { hh, mm };
       }
 
+      function setPeriodo(periodo) {
+        const upper = periodo === 'AM' ? 'AM' : 'PM';
+        salidaPeriodoInput.value = upper;
+        btnAm.classList.toggle('activo', upper === 'AM');
+        btnPm.classList.toggle('activo', upper === 'PM');
+      }
+
       function setCampos(h, m, origen) {
         const { hh, mm } = normalizar(h, m);
-        salidaHoras.value = String(hh).padStart(2, '0');
+        const periodo = hh >= 12 ? 'PM' : 'AM';
+        let horas12 = hh % 12;
+        if (horas12 === 0) horas12 = 12;
+        salidaHoras.value = String(horas12).padStart(2, '0');
         salidaMinutos.value = String(mm).padStart(2, '0');
+        setPeriodo(periodo);
         const hora12 = formatear12(hh, mm);
         if (origen === 'internet') {
           relojSubText.textContent = `Hora actual: ${hora12} · internet`;
@@ -535,6 +582,9 @@
         setCampos(d.getHours(), d.getMinutes(), 'dispositivo');
       }
 
+      btnAm.addEventListener('click', () => setPeriodo('AM'));
+      btnPm.addEventListener('click', () => setPeriodo('PM'));
+
       fetch('https://worldtimeapi.org/api/ip', { cache: 'no-store' })
         .then(r => r.json())
         .then(data => {
@@ -547,12 +597,13 @@
     document.getElementById('timeForm').addEventListener('submit', function (e) {
       e.preventDefault();
 
-      const horasSalida = parseInt(document.getElementById('salidaHoras').value, 10);
+      const horasSalida12 = parseInt(document.getElementById('salidaHoras').value, 10);
       const minutosSalida = parseInt(document.getElementById('salidaMinutos').value, 10);
+      const periodo = document.getElementById('salidaPeriodo').value || 'PM';
       const duracionHoras = parseInt(document.getElementById('duracionHoras').value, 10) || 0;
       const duracionMinutos = parseInt(document.getElementById('duracionMinutos').value, 10) || 0;
 
-      if (!Number.isFinite(horasSalida) || !Number.isFinite(minutosSalida)) {
+      if (!Number.isFinite(horasSalida12) || !Number.isFinite(minutosSalida)) {
         Swal.fire({
           customClass: 'swal-hello',
           icon: 'error',
@@ -564,12 +615,12 @@
         return;
       }
 
-      if (horasSalida < 0 || horasSalida > 23 || minutosSalida < 0 || minutosSalida > 59) {
+      if (horasSalida12 < 1 || horasSalida12 > 12 || minutosSalida < 0 || minutosSalida > 59) {
         Swal.fire({
           customClass: 'swal-hello',
           icon: 'error',
           title: 'Ups...',
-          text: 'La hora de salida debe estar entre 00:00 y 23:59.',
+          text: 'La hora de salida debe estar entre 01:00 y 12:59 en formato 12 h.',
           confirmButtonColor: '#ff6b9d',
           background: '#fff5f8'
         });
@@ -601,8 +652,12 @@
         return;
       }
 
+      let horas24 = horasSalida12 % 12;
+      if (periodo.toUpperCase() === 'PM') {
+        horas24 += 12;
+      }
       const salida = new Date();
-      salida.setHours(horasSalida, minutosSalida, 0);
+      salida.setHours(horas24, minutosSalida, 0);
 
       const regreso = new Date(salida);
       regreso.setMinutes(regreso.getMinutes() + minutosAdicionales);
@@ -611,11 +666,11 @@
       const tiempoRestante = Math.max(0, regreso - ahora);
       const minutosRestantes = Math.floor(tiempoRestante / (1000 * 60));
 
-      const horas24 = regreso.getHours();
-      const minutos24 = regreso.getMinutes();
-      const horas12 = ((horas24 + 11) % 12) + 1;
-      const sufijo = horas24 >= 12 ? 'p.m.' : 'a.m.';
-      const horaRegreso = `${String(horas12).padStart(2, '0')}:${String(minutos24).padStart(2, '0')} ${sufijo}`;
+      const horas24Reg = regreso.getHours();
+      const minutos24Reg = regreso.getMinutes();
+      const horas12Reg = ((horas24Reg + 11) % 12) + 1;
+      const sufijo = horas24Reg >= 12 ? 'p.m.' : 'a.m.';
+      const horaRegreso = `${String(horas12Reg).padStart(2, '0')}:${String(minutos24Reg).padStart(2, '0')} ${sufijo}`;
 
       const resultadoDiv = document.getElementById('resultado');
       const horaRegresoP = document.getElementById('horaRegreso');
