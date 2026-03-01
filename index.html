@@ -308,9 +308,9 @@
       line-height: 1.1;
     }
     .reloj-sub {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--pink-hello);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ad1457;
       display: flex;
       align-items: center;
       gap: 0.35rem;
@@ -495,25 +495,36 @@
       const salidaMinutos = document.getElementById('salidaMinutos');
       const relojSubText = document.getElementById('relojSubText');
 
+      function formatear12(h, m) {
+        const horas24 = Math.min(23, Math.max(0, h));
+        const minutos = Math.min(59, Math.max(0, m));
+        const horas12 = ((horas24 + 11) % 12) + 1;
+        const sufijo = horas24 >= 12 ? 'p.m.' : 'a.m.';
+        return `${String(horas12).padStart(2, '0')}:${String(minutos).padStart(2, '0')} ${sufijo}`;
+      }
+
       function normalizar(h, m) {
         const hh = Math.min(23, Math.max(0, Number.isFinite(h) ? h : 0));
         const mm = Math.min(59, Math.max(0, Number.isFinite(m) ? m : 0));
         return { hh, mm };
       }
 
-      function setCampos(h, m, mensaje) {
+      function setCampos(h, m, origen) {
         const { hh, mm } = normalizar(h, m);
         salidaHoras.value = String(hh).padStart(2, '0');
         salidaMinutos.value = String(mm).padStart(2, '0');
-        if (mensaje) {
-          relojSubText.textContent = mensaje;
+        const hora12 = formatear12(hh, mm);
+        if (origen === 'internet') {
+          relojSubText.textContent = `Hora actual: ${hora12} · internet`;
+        } else if (origen === 'dispositivo') {
+          relojSubText.textContent = `Hora actual: ${hora12} · dispositivo`; 
         }
       }
 
       function setHoraDesdeInternet(datetime) {
         const match = String(datetime).match(/T(\d{2}):(\d{2})/);
         if (match) {
-          setCampos(parseInt(match[1], 10), parseInt(match[2], 10), 'Hora exacta de internet · ajusta si quieres');
+          setCampos(parseInt(match[1], 10), parseInt(match[2], 10), 'internet');
         } else {
           setHoraLocal();
         }
@@ -521,7 +532,7 @@
 
       function setHoraLocal() {
         const d = new Date();
-        setCampos(d.getHours(), d.getMinutes(), 'Hora del dispositivo · ajusta si es necesario');
+        setCampos(d.getHours(), d.getMinutes(), 'dispositivo');
       }
 
       fetch('https://worldtimeapi.org/api/ip', { cache: 'no-store' })
