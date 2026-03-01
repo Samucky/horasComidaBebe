@@ -600,8 +600,11 @@
       const tiempoRestante = Math.max(0, regreso - ahora);
       const minutosRestantes = Math.floor(tiempoRestante / (1000 * 60));
 
-      const opcionesTiempo = { hour: '2-digit', minute: '2-digit' };
-      const horaRegreso = regreso.toLocaleTimeString([], opcionesTiempo);
+      const horas24 = regreso.getHours();
+      const minutos24 = regreso.getMinutes();
+      const horas12 = ((horas24 + 11) % 12) + 1;
+      const sufijo = horas24 >= 12 ? 'p.m.' : 'a.m.';
+      const horaRegreso = `${String(horas12).padStart(2, '0')}:${String(minutos24).padStart(2, '0')} ${sufijo}`;
 
       const resultadoDiv = document.getElementById('resultado');
       const horaRegresoP = document.getElementById('horaRegreso');
