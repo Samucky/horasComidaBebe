@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ff6b9d">
+  <title>⏰ Horas de comida</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root {
+      --pink-hello: #ff85a2;
+      --pink-deep: #ff6b9d;
+      --pink-light: #ffb8d0;
+      --pink-pale: #ffe4ec;
+      --red-bow: #e91e63;
+      --white: #ffffff;
+      --safe-top: env(safe-area-inset-top, 0);
+      --safe-bottom: env(safe-area-inset-bottom, 0);
+      --safe-left: env(safe-area-inset-left, 0);
+      --safe-right: env(safe-area-inset-right, 0);
+    }
+
+    * {
+      font-family: 'Quicksand', sans-serif;
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: linear-gradient(165deg, #ffe8f0 0%, #ffd4e5 25%, #ffb8d0 50%, #ff9ec4 75%, #ff85a2 100%);
+      background-attachment: fixed;
+      position: relative;
+      overflow-x: hidden;
+      padding: max(1rem, var(--safe-top)) max(0.75rem, var(--safe-left)) max(1.5rem, var(--safe-bottom)) max(0.75rem, var(--safe-right));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(255, 182, 193, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255, 105, 180, 0.2) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .heart-float {
+      position: fixed;
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      opacity: 0.15;
+      animation: float 6s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .heart-float:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
+    .heart-float:nth-child(2) { left: 85%; top: 15%; animation-delay: 1s; }
+    .heart-float:nth-child(3) { left: 70%; top: 80%; animation-delay: 2s; }
+    .heart-float:nth-child(4) { left: 15%; top: 70%; animation-delay: 0.5s; }
+    .heart-float:nth-child(5) { left: 50%; top: 10%; animation-delay: 3s; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-15px) scale(1.1); }
+    }
+
+    .card-hello {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: min(28rem, 100%);
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: clamp(1.25rem, 4vw, 2rem);
+      box-shadow: 
+        0 25px 50px -12px rgba(233, 30, 99, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      overflow: hidden;
+      padding: clamp(1.25rem, 5vw, 2rem);
+    }
+
+    .card-hello::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--red-bow), var(--pink-deep), var(--pink-hello));
+      border-radius: clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 4vw, 2rem) 0 0;
+    }
+
+    .title-hello {
+      font-family: 'Nunito', sans-serif;
+      color: var(--pink-deep);
+      text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+      font-size: clamp(1.35rem, 4vw, 1.875rem);
+      line-height: 1.3;
+    }
+
+    .img-hello-wrap {
+      width: clamp(90px, 22vw, 120px);
+      height: clamp(90px, 22vw, 120px);
+      margin: 0 auto 0.5rem;
+      background: linear-gradient(145deg, var(--pink-pale), var(--pink-light));
+      border-radius: 50%;
+      padding: 6px;
+      box-shadow: 0 8px 24px rgba(233, 30, 99, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .img-hello-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Bloques de input con diseño elevado */
+    .input-block {
+      background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, var(--pink-pale) 100%);
+      border: 2px solid var(--pink-light);
+      border-radius: 1.25rem;
+      padding: 0.25rem 1rem 1rem;
+      box-shadow: 
+        0 4px 12px rgba(233, 30, 99, 0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .input-block:focus-within {
+      border-color: var(--pink-deep);
+      box-shadow: 0 4px 16px rgba(255, 107, 157, 0.2), 0 0 0 4px rgba(255, 107, 157, 0.12);
+    }
+    .input-block label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #c2185b;
+      margin-bottom: 0.5rem;
+      padding-top: 0.25rem;
+    }
+    .input-block label span.icon {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .input-hello {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      border: 2px solid rgba(255, 182, 193, 0.6);
+      color: #ad1457;
+      border-radius: 0.875rem;
+      padding: 0.875rem 1rem;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      min-height: 2.75rem;
+    }
+    .input-hello::placeholder {
+      color: #e91e8c66;
+    }
+    .input-hello:focus {
+      outline: none;
+      border-color: var(--pink-deep);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.15);
+    }
+
+    /* Duración en formato H:MM - contenedor tipo reloj */
+    .duracion-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.7);
+      border: 2px solid rgba(255, 182, 193, 0.6);
+      border-radius: 0.875rem;
+      padding: 0.5rem 1rem;
+      min-height: 2.75rem;
+      transition: all 0.2s ease;
+    }
+    .input-block:focus-within .duracion-wrap {
+      background: #fff;
+      border-color: var(--pink-deep);
+      box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.15);
+    }
+    .duracion-wrap input {
+      width: 3.5rem;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ad1457;
+      border: none;
+      background: transparent;
+      padding: 0.25rem 0;
+    }
+    .duracion-wrap input:focus {
+      outline: none;
+    }
+    .duracion-wrap input::placeholder {
+      color: #f48fb1;
+    }
+    .duracion-sep {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--pink-deep);
+      line-height: 1;
+      user-select: none;
+    }
+    .duracion-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--pink-deep);
+      margin-left: 0.25rem;
+    }
+
+    /* Reloj hora de salida - diseño padre */
+    .reloj-salida {
+      position: relative;
+      background: linear-gradient(145deg, #fff 0%, var(--pink-pale) 50%, #ffe4ec 100%);
+      border: 2px solid var(--pink-light);
+      border-radius: 1.5rem;
+      padding: 1.25rem 1rem;
+      box-shadow: 
+        0 8px 24px rgba(233, 30, 99, 0.12),
+        inset 0 1px 0 rgba(255,255,255,0.9),
+        0 0 0 1px rgba(255,255,255,0.5) inset;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .reloj-salida::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--pink-deep), transparent);
+      opacity: 0.5;
+    }
+    .reloj-salida:focus-within {
+      border-color: var(--pink-deep);
+      box-shadow: 0 8px 28px rgba(255, 107, 157, 0.25), 0 0 0 4px rgba(255, 107, 157, 0.15);
+    }
+    .reloj-display {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: text;
+      padding: 0.5rem;
+      border-radius: 1rem;
+      transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .reloj-hora-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 0.25rem;
+    }
+    .reloj-num {
+      width: 3rem;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(1.8rem, 7vw, 2.4rem);
+      font-weight: 800;
+      color: var(--pink-deep);
+      border: none;
+      background: transparent;
+      padding: 0.1rem 0;
+    }
+    .reloj-num:focus {
+      outline: none;
+    }
+    .reloj-num::placeholder {
+      color: #f48fb1;
+    }
+    .reloj-display:hover {
+      background: rgba(255, 107, 157, 0.08);
+    }
+    .reloj-display:active {
+      background: rgba(255, 107, 157, 0.12);
+    }
+    .reloj-hora {
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(2.25rem, 8vw, 3rem);
+      font-weight: 800;
+      color: var(--pink-deep);
+      letter-spacing: 0.02em;
+      text-shadow: 0 2px 0 rgba(255,255,255,0.9);
+      line-height: 1.1;
+    }
+    .reloj-sub {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--pink-hello);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .reloj-sub .punto {
+      width: 4px;
+      height: 4px;
+      background: var(--pink-deep);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .reloj-input-overlay {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+      font-size: 1rem;
+    }
+
+    .btn-hello {
+      width: 100%;
+      background: linear-gradient(135deg, var(--pink-deep), var(--red-bow));
+      color: white;
+      font-weight: 700;
+      font-size: clamp(1rem, 2.5vw, 1.125rem);
+      border-radius: 1.25rem;
+      padding: clamp(0.75rem, 2.5vw, 0.875rem) 1.5rem;
+      min-height: 3.25rem;
+      box-shadow: 0 8px 24px rgba(233, 30, 99, 0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-hello:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(233, 30, 99, 0.45);
+    }
+    .btn-hello:active {
+      transform: translateY(0);
+    }
+
+    .resultado-hello {
+      background: linear-gradient(135deg, var(--pink-pale), #fff0f5);
+      border: 2px solid var(--pink-light);
+      border-radius: 1.25rem;
+      color: #ad1457;
+      box-shadow: inset 0 2px 8px rgba(255, 182, 193, 0.3);
+      padding: clamp(1rem, 4vw, 1.25rem);
+    }
+    .resultado-hello p:last-child {
+      font-size: clamp(1.5rem, 5vw, 1.875rem);
+    }
+
+    .swal-hello .swal2-popup {
+      border-radius: 1.5rem;
+      border: 2px solid var(--pink-light);
+      box-shadow: 0 25px 50px rgba(233, 30, 99, 0.2);
+    }
+    .swal-hello .swal2-title { color: #c2185b; font-family: 'Nunito', sans-serif; }
+    .swal-hello .swal2-html-container { color: #880e4f; }
+    .swal-hello .swal2-confirm {
+      background: linear-gradient(135deg, var(--pink-deep), var(--red-bow)) !important;
+      border-radius: 1rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <span class="heart-float">💕</span>
+  <span class="heart-float">💖</span>
+  <span class="heart-float">🌸</span>
+  <span class="heart-float">💕</span>
+  <span class="heart-float">💖</span>
+
+  <div class="w-full max-w-md mx-auto flex flex-col items-center justify-center">
+    <div class="card-hello">
+      <div class="text-center mb-3 sm:mb-4">
+        <div class="img-hello-wrap">
+          <img 
+            src="images/hellokitty.png" 
+            alt="Hello Kitty"
+          />
+        </div>
+        <p class="text-sm text-pink-400 font-medium">¡Tu calculadora favorita!</p>
+      </div>
+
+      <h1 class="title-hello text-center mb-5 sm:mb-6">
+        Calculadora de horas de comida
+      </h1>
+
+      <form id="timeForm" class="space-y-4 sm:space-y-5">
+        <div class="input-block reloj-salida">
+          <label>
+            <span class="icon">🕐</span>
+            Hora de salida
+          </label>
+          <div id="relojDisplay" class="reloj-display" aria-label="Edita la hora de salida">
+            <div class="reloj-hora-wrap">
+              <input
+                type="number"
+                id="salidaHoras"
+                min="0"
+                max="23"
+                placeholder="HH"
+                inputmode="numeric"
+                class="reloj-num"
+                aria-label="Hora de salida - horas"
+              />
+              <span class="duracion-sep">:</span>
+              <input
+                type="number"
+                id="salidaMinutos"
+                min="0"
+                max="59"
+                placeholder="MM"
+                inputmode="numeric"
+                class="reloj-num"
+                aria-label="Hora de salida - minutos"
+              />
+            </div>
+            <span id="relojSub" class="reloj-sub">
+              <span class="punto"></span>
+              <span id="relojSubText">Sincronizando hora...</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="input-block">
+          <label>
+            <span class="icon">⏱️</span>
+            Duración de la comida
+          </label>
+          <div class="duracion-wrap">
+            <input
+              type="number"
+              id="duracionHoras"
+              min="0"
+              max="23"
+              value="1"
+              placeholder="0"
+              inputmode="numeric"
+              aria-label="Horas"
+            />
+            <span class="duracion-sep">:</span>
+            <input
+              type="number"
+              id="duracionMinutos"
+              min="0"
+              max="59"
+              value="30"
+              placeholder="00"
+              inputmode="numeric"
+              aria-label="Minutos"
+            />
+            <span class="duracion-label">h : min</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-hello">
+          ✨ Calcular hora de regreso
+        </button>
+      </form>
+
+      <div id="resultado" class="resultado-hello mt-5 sm:mt-6 p-5 text-center hidden">
+        <p class="text-base font-semibold text-pink-700">Deberías regresar a las</p>
+        <p id="horaRegreso" class="text-3xl font-bold text-pink-600 mt-1"></p>
+      </div>
+    </div>
+
+    <p class="text-center text-pink-400 text-sm mt-4 font-medium">Hecho con 💖 para ti</p>
+  </div>
+
+  <script>
+    (function initReloj() {
+      const salidaHoras = document.getElementById('salidaHoras');
+      const salidaMinutos = document.getElementById('salidaMinutos');
+      const relojSubText = document.getElementById('relojSubText');
+
+      function normalizar(h, m) {
+        const hh = Math.min(23, Math.max(0, Number.isFinite(h) ? h : 0));
+        const mm = Math.min(59, Math.max(0, Number.isFinite(m) ? m : 0));
+        return { hh, mm };
+      }
+
+      function setCampos(h, m, mensaje) {
+        const { hh, mm } = normalizar(h, m);
+        salidaHoras.value = String(hh).padStart(2, '0');
+        salidaMinutos.value = String(mm).padStart(2, '0');
+        if (mensaje) {
+          relojSubText.textContent = mensaje;
+        }
+      }
+
+      function setHoraDesdeInternet(datetime) {
+        const match = String(datetime).match(/T(\d{2}):(\d{2})/);
+        if (match) {
+          setCampos(parseInt(match[1], 10), parseInt(match[2], 10), 'Hora exacta de internet · ajusta si quieres');
+        } else {
+          setHoraLocal();
+        }
+      }
+
+      function setHoraLocal() {
+        const d = new Date();
+        setCampos(d.getHours(), d.getMinutes(), 'Hora del dispositivo · ajusta si es necesario');
+      }
+
+      fetch('https://worldtimeapi.org/api/ip', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.datetime) setHoraDesdeInternet(data.datetime);
+          else setHoraLocal();
+        })
+        .catch(() => setHoraLocal());
+    })();
+
+    document.getElementById('timeForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const horasSalida = parseInt(document.getElementById('salidaHoras').value, 10);
+      const minutosSalida = parseInt(document.getElementById('salidaMinutos').value, 10);
+      const duracionHoras = parseInt(document.getElementById('duracionHoras').value, 10) || 0;
+      const duracionMinutos = parseInt(document.getElementById('duracionMinutos').value, 10) || 0;
+
+      if (!Number.isFinite(horasSalida) || !Number.isFinite(minutosSalida)) {
+        Swal.fire({
+          customClass: 'swal-hello',
+          icon: 'error',
+          title: 'Ups...',
+          text: 'Indica la hora de salida (horas y minutos).',
+          confirmButtonColor: '#ff6b9d',
+          background: '#fff5f8'
+        });
+        return;
+      }
+
+      if (horasSalida < 0 || horasSalida > 23 || minutosSalida < 0 || minutosSalida > 59) {
+        Swal.fire({
+          customClass: 'swal-hello',
+          icon: 'error',
+          title: 'Ups...',
+          text: 'La hora de salida debe estar entre 00:00 y 23:59.',
+          confirmButtonColor: '#ff6b9d',
+          background: '#fff5f8'
+        });
+        return;
+      }
+
+      if (duracionHoras < 0 || duracionHoras > 23 || duracionMinutos < 0 || duracionMinutos > 59) {
+        Swal.fire({
+          customClass: 'swal-hello',
+          icon: 'error',
+          title: 'Ups...',
+          text: 'Duración no válida. Usa formato horas (0-23) y minutos (0-59).',
+          confirmButtonColor: '#ff6b9d',
+          background: '#fff5f8'
+        });
+        return;
+      }
+
+      const minutosAdicionales = duracionHoras * 60 + duracionMinutos;
+      if (minutosAdicionales <= 0) {
+        Swal.fire({
+          customClass: 'swal-hello',
+          icon: 'error',
+          title: 'Ups...',
+          text: 'La duración debe ser mayor que 0 (ej: 1:30).',
+          confirmButtonColor: '#ff6b9d',
+          background: '#fff5f8'
+        });
+        return;
+      }
+
+      const salida = new Date();
+      salida.setHours(horasSalida, minutosSalida, 0);
+
+      const regreso = new Date(salida);
+      regreso.setMinutes(regreso.getMinutes() + minutosAdicionales);
+
+      const ahora = new Date();
+      const tiempoRestante = Math.max(0, regreso - ahora);
+      const minutosRestantes = Math.floor(tiempoRestante / (1000 * 60));
+
+      const opcionesTiempo = { hour: '2-digit', minute: '2-digit' };
+      const horaRegreso = regreso.toLocaleTimeString([], opcionesTiempo);
+
+      const resultadoDiv = document.getElementById('resultado');
+      const horaRegresoP = document.getElementById('horaRegreso');
+      resultadoDiv.classList.remove('hidden');
+      horaRegresoP.textContent = horaRegreso;
+
+      const swalOpts = {
+        customClass: 'swal-hello',
+        confirmButtonColor: '#ff6b9d',
+        background: '#fff5f8'
+      };
+
+      if (minutosRestantes <= 0) {
+        Swal.fire({
+          ...swalOpts,
+          icon: 'warning',
+          title: '¡Es hora de regresar!',
+          text: 'Ya deberías estar de regreso.'
+        });
+      } else if (minutosRestantes < 60) {
+        Swal.fire({
+          ...swalOpts,
+          icon: 'info',
+          title: 'Tiempo restante',
+          text: `Te quedan ${minutosRestantes} minutos.`
+        });
+      } else {
+        const horasRestantes = Math.floor(minutosRestantes / 60);
+        const minutosSobran = minutosRestantes % 60;
+        const textoTiempo = minutosSobran > 0
+          ? `${horasRestantes} horas y ${minutosSobran} minutos`
+          : `${horasRestantes} horas`;
+        Swal.fire({
+          ...swalOpts,
+          icon: 'info',
+          title: 'Tiempo restante',
+          text: `Te quedan ${textoTiempo}.`
+        });
+      }
+    });
+  </script>
+</body>
+</html>
